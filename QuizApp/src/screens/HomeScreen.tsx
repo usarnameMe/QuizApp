@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Text, StyleSheet, } from "react-native";
-import {Picker} from '@react-native-picker/picker';
+import { Text, StyleSheet, Button } from "react-native";
+import { Picker } from "@react-native-picker/picker";
 
 import { useQuiz } from "../context/QuizContext";
 import { fetchCategories } from "../utils/api";
 
 import { View } from "react-native";
 
-const HomeScreen: React.FC = ({ }) => {
+const HomeScreen: React.FC = ({ navigation }) => {
   const [categories, setCategories] = useState([]);
   const { state, dispatch } = useQuiz();
 
@@ -40,6 +40,28 @@ const HomeScreen: React.FC = ({ }) => {
           />
         ))}
       </Picker>
+
+      <Text style={styles.title}>Select Dificulty: </Text>
+      <Picker
+        selectedValue={state.settings.difficulty}
+        onValueChange={(itemValue, itemIndex) =>
+          dispatch({
+            type: "SET_SETTINGS",
+            payload: { ...state.settings, difficulty: itemValue },
+          })
+        }
+      >
+        <Picker.Item label="Any Difficulty" value="" />
+        <Picker.Item label="Easy" value="easy" />
+        <Picker.Item label="Medium" value="medium" />
+        <Picker.Item label="Hard" value="hard" />
+      </Picker>
+
+      <Button
+        title="Start Quiz"
+        onPress={() => navigation.navigate("Quiz")}
+        disabled={!state.settings.category}
+      />
     </View>
   );
 };
@@ -53,7 +75,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     marginBottom: 20,
-},
+  },
 });
 
 export default HomeScreen;
