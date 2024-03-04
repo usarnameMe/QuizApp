@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from "react-native";
-import { useQuiz } from "../context/QuizContext";  
-import { fetchQuestions } from "../utils/api"; 
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import { useQuiz } from "../context/QuizContext";
+import { fetchQuestions } from "../utils/api";
 import { StackNavigationProp } from '@react-navigation/stack';
 
 function decodeHTMLEntities(text: string) {
@@ -35,15 +35,13 @@ const QuizScreen: React.FC<Props> = ({ navigation }) => {
           try {
               const fetchedQuestions = await fetchQuestions(state.settings.category, state.settings.difficulty);
               if (fetchedQuestions && fetchedQuestions.length > 0) {
-                  const decodedQuestions = fetchedQuestions.map((question: { question: any; correct_answer: any; incorrect_answers: any[]; }) => ({
+                  const decodedQuestions = fetchedQuestions.map((question) => ({
                       ...question,
                       question: decodeHTMLEntities(question.question),
                       correct_answer: decodeHTMLEntities(question.correct_answer),
                       incorrect_answers: question.incorrect_answers.map(decodeHTMLEntities),
                   }));
                   setQuestions(decodedQuestions);
-              } else {
-                  console.log("Questions have reached rate limit. Have no idea why is this happening, if you know let me know please. ");
               }
           } catch (error) {
               console.error("Error fetching questions:", error);
@@ -51,16 +49,16 @@ const QuizScreen: React.FC<Props> = ({ navigation }) => {
           setLoading(false);
       };
       loadQuestions();
-  }, [state.settings]);
+    }, [state.settings]);
   
 
     useEffect(() => {
         if (showAnswer) {
             const timer = setTimeout(() => {
+                setShowAnswer(false);
+                setSelectedAnswer(null);
                 if (currentQuestionIndex < questions.length - 1) {
                     setCurrentQuestionIndex(currentQuestionIndex + 1);
-                    setShowAnswer(false);
-                    setSelectedAnswer(null);
                 } else {
                     dispatch({
                         type: "ADD_COMPLETED_QUIZ",
@@ -76,6 +74,20 @@ const QuizScreen: React.FC<Props> = ({ navigation }) => {
             return () => clearTimeout(timer);
         }
     }, [showAnswer, currentQuestionIndex, questions.length, navigation, dispatch, state.score, state.settings.category, state.settings.difficulty]);
+
+    const handleNextQuestion = () => {
+        if (currentQuestionIndex < questions.length - 1) {
+            setCurrentQuestionIndex(currentQuestionIndex + 1);
+        } else {
+            navigation.navigate("Result");
+        }
+    };
+
+    const handlePreviousQuestion = () => {
+        if (currentQuestionIndex > 0) {
+            setCurrentQuestionIndex(currentQuestionIndex - 1);
+        }
+    };
 
     if (loading) {
         return (
@@ -100,7 +112,7 @@ const QuizScreen: React.FC<Props> = ({ navigation }) => {
                         </View>
                         {questions[currentQuestionIndex].incorrect_answers.concat(questions[currentQuestionIndex].correct_answer)
                             .sort(() => Math.random() - 0.5)
-                            .map((answer: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal, index: React.Key) => (
+                            .map((answer, index) => (
                                 <TouchableOpacity
                                     key={index}
                                     style={[
@@ -118,6 +130,21 @@ const QuizScreen: React.FC<Props> = ({ navigation }) => {
                                     <Text style={styles.answerText}>{answer}</Text>
                                 </TouchableOpacity>
                             ))}
+                        <View style={styles.navigationButtons}>
+                            <TouchableOpacity
+                                onPress={handlePreviousQuestion}
+                                style={[styles.navButton, currentQuestionIndex === 0 && styles.disabledButton]}
+                                disabled={currentQuestionIndex === 0}
+                            >
+                                <Text style={styles.navButtonText}>Previous</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={handleNextQuestion}
+                                style={[styles.navButton, currentQuestionIndex === questions.length - 1 && styles.disabledButton]}
+                            >
+                                <Text style={styles.navButtonText}>{currentQuestionIndex === questions.length - 1 ? 'Finish' : 'Next'}</Text>
+                            </TouchableOpacity>
+                        </View>
                     </>
                 )}
             </ScrollView>
@@ -156,6 +183,25 @@ const styles = StyleSheet.create({
     answerText: {
         textAlign: "center",
         fontSize: 16,
+    },
+    navigationButtons: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 20,
+    },
+    navButton: {
+        backgroundColor: '#6200EE',
+        padding: 10,
+        borderRadius: 5,
+        minWidth: 100,
+        alignItems: 'center',
+    },
+    navButtonText: {
+        color: 'white',
+        fontSize: 16,
+    },
+    disabledButton: {
+        backgroundColor: '#cccccc',
     },
 });
 

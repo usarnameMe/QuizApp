@@ -1,13 +1,10 @@
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
-import { StyleSheet, Text, View } from "react-native";
-
-import HomeScreen from "./src/screens/HomeScreen";
-import QuizScreen from "./src/screens/QuizScreen";
-import ResultScreen from "./src/screens/ResultScreen";
-import ScoreHistoryScreen from "./src/screens/ScoreHistoryScreen"
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { QuizProvider } from "../QuizApp/src/context/QuizContext";
+import BottomTabNavigator from "./src/navigation/BottomTabNavigator"; 
+import ResultScreen from "./src/screens/ResultScreen";
+import QuizScreen from "./src/screens/QuizScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -16,23 +13,17 @@ const App = () => {
     <QuizProvider>
       <NavigationContainer>
         <Stack.Navigator>
-          <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen 
+            name="HomeTabs" 
+            component={BottomTabNavigator} 
+            options={{ headerShown: false }} 
+          />
           <Stack.Screen name="Quiz" component={QuizScreen} />
           <Stack.Screen name="Result" component={ResultScreen} />
-          <Stack.Screen name="ScoreHistory" component={ScoreHistoryScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </QuizProvider>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});
 
 export default App;

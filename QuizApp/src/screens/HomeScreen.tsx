@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Button } from "react-native";
-import { Picker } from "@react-native-picker/picker";
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, Button } from 'react-native';
+import DropDownPicker from 'react-native-dropdown-picker';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { useQuiz } from "../context/QuizContext";
-import { fetchCategories } from "../utils/api";
+import { useQuiz } from '../context/QuizContext';
+import { fetchCategories } from '../utils/api';
 
 type HomeNavigatorParamList = {
   Home: undefined;
@@ -19,12 +19,14 @@ type Props = {
 
 const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const [categories, setCategories] = useState([]);
+  const [openCategory, setOpenCategory] = useState(false);
+  const [openDifficulty, setOpenDifficulty] = useState(false);
   const { state, dispatch } = useQuiz();
 
   useEffect(() => {
     const loadCategories = async () => {
       const fetchedCategories = await fetchCategories();
-      setCategories(fetchedCategories);
+      setCategories(fetchedCategories.map(cat => ({ label: cat.name, value: cat.id })));
     };
     loadCategories();
   }, []);
@@ -32,35 +34,42 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Select Category:</Text>
-      <Picker
-        selectedValue={state.settings.category}
-        onValueChange={(itemValue, itemIndex) =>
+      <DropDownPicker
+        open={openCategory}
+        value={state.settings.category}
+        items={categories}
+        setOpen={setOpenCategory}
+        setValue={(callback) =>
           dispatch({
-            type: "SET_SETTINGS",
-            payload: { ...state.settings, category: itemValue }
+            type: 'SET_SETTINGS',
+            payload: { ...state.settings, category: callback(state.settings.category) },
           })
         }
-      >
-        {categories.map((category) => (
-          <Picker.Item key={category.id} label={category.name} value={category.id.toString()} />
-        ))}
-      </Picker>
+        setItems={setCategories}
+        zIndex={3000}
+        zIndexInverse={1000}
+      />
       <Text style={styles.title}>Select Difficulty:</Text>
-      <Picker
-        selectedValue={state.settings.difficulty}
-        onValueChange={(itemValue, itemIndex) =>
+      <DropDownPicker
+        open={openDifficulty}
+        value={state.settings.difficulty}
+        items={[
+          { label: 'Any Difficulty', value: '' },
+          { label: 'Easy', value: 'easy' },
+          { label: 'Medium', value: 'medium' },
+          { label: 'Hard', value: 'hard' },
+        ]}
+        setOpen={setOpenDifficulty}
+        setValue={(callback) =>
           dispatch({
-            type: "SET_SETTINGS",
-            payload: { ...state.settings, difficulty: itemValue }
+            type: 'SET_SETTINGS',
+            payload: { ...state.settings, difficulty: callback(state.settings.difficulty) },
           })
         }
-      >
-        <Picker.Item label="Any Difficulty" value="" />
-        <Picker.Item label="Easy" value="easy" />
-        <Picker.Item label="Medium" value="medium" />
-        <Picker.Item label="Hard" value="hard" />
-      </Picker>
-      <Button title="Start Quiz" onPress={() => navigation.navigate("Quiz")} disabled={!state.settings.category} />
+        zIndex={2000}
+        zIndexInverse={2000}
+      />
+      <Button title="Start Quiz" onPress={() => navigation.navigate('Quiz')} disabled={!state.settings.category} />
     </View>
   );
 };
@@ -69,7 +78,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 24,
-    backgroundColor: "#eaeaea",
+    backgroundColor: '#eaeaea',
   },
   title: {
     fontSize: 20,
