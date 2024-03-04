@@ -1,18 +1,14 @@
-import React, {
-  createContext,
-  useContext,
-  useReducer,
-  Dispatch,
-  ReactNode,
-} from "react";
+import React, { createContext, useContext, useReducer, Dispatch, ReactNode } from "react";
 
 interface Quiz {
+  userName: string;
   category: string;
   difficulty: string;
   score: number;
 }
 
 interface QuizState {
+  userName: string;
   score: number;
   settings: {
     category: string;
@@ -27,6 +23,7 @@ interface QuizAction {
 }
 
 const initialState: QuizState = {
+  userName: "",
   score: 0,
   settings: {
     category: "",
@@ -40,9 +37,7 @@ interface QuizContextType {
   dispatch: Dispatch<QuizAction>;
 }
 
-export const QuizContext = createContext<QuizContextType | undefined>(
-  undefined
-);
+export const QuizContext = createContext<QuizContextType | undefined>(undefined);
 
 const QuizReducer = (state: QuizState, action: QuizAction): QuizState => {
   switch (action.type) {
@@ -51,12 +46,20 @@ const QuizReducer = (state: QuizState, action: QuizAction): QuizState => {
     case "ADD_COMPLETED_QUIZ":
       return {
         ...state,
-        completedQuizzes: [...state.completedQuizzes, action.payload],
+        completedQuizzes: [
+          ...state.completedQuizzes,
+          { ...action.payload, userName: state.userName },
+        ],
+      };
+    case "SET_USER":
+      return {
+        ...state,
+        userName: action.payload,
       };
     case "INCREMENT_SCORE":
       return {
         ...state,
-        score: state.score + 1, 
+        score: state.score + 1,
       };
     default:
       return state;
@@ -69,7 +72,6 @@ interface QuizProviderProps {
 
 export const QuizProvider: React.FC<QuizProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(QuizReducer, initialState);
-
   return (
     <QuizContext.Provider value={{ state, dispatch }}>
       {children}

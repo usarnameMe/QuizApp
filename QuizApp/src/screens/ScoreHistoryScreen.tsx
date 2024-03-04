@@ -9,6 +9,7 @@ const ScoreHistoryScreen = () => {
         <ScrollView style={styles.container}>
             {state.completedQuizzes.map((quiz, index) => (
                 <View key={index} style={styles.quizRecord}>
+                    <Text style={styles.text}>User: {quiz.userName}</Text>
                     <Text style={styles.text}>Category: {quiz.category}</Text>
                     <Text style={styles.text}>Difficulty: {quiz.difficulty}</Text>
                     <Text style={styles.text}>Score: {quiz.score}</Text>

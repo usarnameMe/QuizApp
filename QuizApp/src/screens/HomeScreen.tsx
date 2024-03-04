@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Button } from 'react-native';
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, Button, TextInput } from "react-native";
 import DropDownPicker from 'react-native-dropdown-picker';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { useQuiz } from '../context/QuizContext';
-import { fetchCategories } from '../utils/api';
+import { useQuiz } from "../context/QuizContext";
+import { fetchCategories } from "../utils/api";
 
 type HomeNavigatorParamList = {
   Home: undefined;
@@ -22,6 +22,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const [openCategory, setOpenCategory] = useState(false);
   const [openDifficulty, setOpenDifficulty] = useState(false);
   const { state, dispatch } = useQuiz();
+  const [userName, setUserName] = useState("");
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -33,6 +34,13 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      <Text style={styles.title}>Enter Your Name:</Text>
+      <TextInput
+        style={styles.input}
+        onChangeText={setUserName}
+        value={userName}
+        placeholder="Your Name"
+      />
       <Text style={styles.title}>Select Category:</Text>
       <DropDownPicker
         open={openCategory}
@@ -69,7 +77,10 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
         zIndex={2000}
         zIndexInverse={2000}
       />
-      <Button title="Start Quiz" onPress={() => navigation.navigate('Quiz')} disabled={!state.settings.category} />
+      <Button title="Start Quiz" onPress={() => {
+        dispatch({ type: 'SET_USER', payload: userName });
+        navigation.navigate('Quiz');
+      }} disabled={!state.settings.category || !userName} />
     </View>
   );
 };
@@ -83,6 +94,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     marginBottom: 20,
+  },
+  input: {
+    height: 40,
+    marginBottom: 12,
+    borderWidth: 1,
+    padding: 10,
   },
 });
 

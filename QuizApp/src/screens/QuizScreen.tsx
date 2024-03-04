@@ -66,6 +66,7 @@ const QuizScreen: React.FC<Props> = ({ navigation }) => {
                             category: state.settings.category,
                             difficulty: state.settings.difficulty,
                             score: state.score,
+                            user: state.userName
                         },
                     });
                     navigation.navigate("Result");
