@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useReducer, Dispatch, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useReducer,
+  Dispatch,
+  ReactNode,
+} from "react";
 
 interface Quiz {
   userName: string;
@@ -37,7 +43,9 @@ interface QuizContextType {
   dispatch: Dispatch<QuizAction>;
 }
 
-export const QuizContext = createContext<QuizContextType | undefined>(undefined);
+export const QuizContext = createContext<QuizContextType | undefined>(
+  undefined
+);
 
 const QuizReducer = (state: QuizState, action: QuizAction): QuizState => {
   switch (action.type) {
@@ -60,6 +68,18 @@ const QuizReducer = (state: QuizState, action: QuizAction): QuizState => {
       return {
         ...state,
         score: state.score + 1,
+      };
+    case "DELETE_COMPLETED_QUIZ":
+      const updatedQuizzes = [...state.completedQuizzes];
+      updatedQuizzes.splice(action.payload, 1);
+      return {
+        ...state,
+        completedQuizzes: updatedQuizzes,
+      };
+    case "CLEAR_ALL_HISTORY":
+      return {
+        ...state,
+        completedQuizzes: [],
       };
     default:
       return state;
