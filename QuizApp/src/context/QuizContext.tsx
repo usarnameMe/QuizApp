@@ -53,6 +53,11 @@ const QuizReducer = (state: QuizState, action: QuizAction): QuizState => {
         ...state,
         completedQuizzes: [...state.completedQuizzes, action.payload],
       };
+    case "INCREMENT_SCORE":
+      return {
+        ...state,
+        score: state.score + 1, 
+      };
     default:
       return state;
   }

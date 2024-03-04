@@ -1,11 +1,9 @@
-import axios from 'axios';
-
 const cache = {
     categories: { data: null, timestamp: 0 },
     questions: new Map<string, { data: null | any[]; timestamp: number }>()
 };
 
-const CACHE_DURATION = 1 * 10 * 100; 
+const CACHE_DURATION = 1 * 30 * 1000; 
 
 export const fetchCategories = async () => {
     const now = Date.now();
@@ -14,11 +12,12 @@ export const fetchCategories = async () => {
     }
 
     try {
-        const response = await axios.get('https://opentdb.com/api_category.php');
-        cache.categories = { data: response.data.trivia_categories, timestamp: Date.now() };
-        return response.data.trivia_categories;
+        const response = await fetch('https://opentdb.com/api_category.php');
+        const data = await response.json();
+        cache.categories = { data: data.trivia_categories, timestamp: Date.now() };
+        return data.trivia_categories;
     } catch (error) {
-        console.log(error);
+        console.error(error);
         return [];
     }
 };
@@ -32,15 +31,12 @@ export const fetchQuestions = async (category: string, difficulty: string) => {
 
     try {
         const url = `https://opentdb.com/api.php?amount=10${category ? `&category=${category}` : ''}${difficulty ? `&difficulty=${difficulty}` : ''}&type=multiple`;
-        const response = await axios.get(url);
-        cache.questions.set(cacheKey, { data: response.data.results, timestamp: Date.now() });
-        return response.data.results;
+        const response = await fetch(url);
+        const data = await response.json();
+        cache.questions.set(cacheKey, { data: data.results, timestamp: Date.now() });
+        return data.results;
     } catch (error) {
-        if (axios.isAxiosError(error) && error.response?.status === 429) {
-            console.log("You've hit the rate limit. Please wait and try again later.");
-        } else {
-            console.log(error);
-        }
+        console.error(error);
         return [];
     }
 };

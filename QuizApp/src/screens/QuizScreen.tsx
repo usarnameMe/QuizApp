@@ -1,17 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from "react-native";
-import { useQuiz } from "../context/QuizContext";
-import { fetchQuestions } from "../utils/api";
+import { useQuiz } from "../context/QuizContext";  
+import { fetchQuestions } from "../utils/api"; 
 import { StackNavigationProp } from '@react-navigation/stack';
 
-function decodeHTMLEntities(text) {
-    return text
-        .replace(/&amp;/g, '&')
-        .replace(/&lt;/g, '<')
-        .replace(/&gt;/g, '>')
-        .replace(/&apos;/g, "'")
-        .replace(/&quot;/g, '"')
-        .replace(/&#039;/g, "'");
+function decodeHTMLEntities(text: string) {
+    return text.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+        .replace(/&apos;/g, "'").replace(/&quot;/g, '"').replace(/&#039;/g, "'");
 }
 
 type QuizNavigatorParamList = {
@@ -27,7 +22,7 @@ type Props = {
 };
 
 const QuizScreen: React.FC<Props> = ({ navigation }) => {
-    const { state } = useQuiz();
+    const { state, dispatch } = useQuiz();
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [questions, setQuestions] = useState([]);
     const [selectedAnswer, setSelectedAnswer] = useState(null);
@@ -35,24 +30,29 @@ const QuizScreen: React.FC<Props> = ({ navigation }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const loadQuestions = async () => {
-            setLoading(true);
-            const fetchedQuestions = await fetchQuestions(state.settings.category, state.settings.difficulty);
-            if (fetchedQuestions.length > 0) {
-                const decodedQuestions = fetchedQuestions.map(question => ({
-                    ...question,
-                    question: decodeHTMLEntities(question.question),
-                    correct_answer: decodeHTMLEntities(question.correct_answer),
-                    incorrect_answers: question.incorrect_answers.map(decodeHTMLEntities),
-                }));
-                setQuestions(decodedQuestions);
-            } else {
-                Alert.alert("Notice", "Could not load questions or reached rate limit.");
-            }
-            setLoading(false);
-        };
-        loadQuestions();
-    }, [state.settings]);
+      const loadQuestions = async () => {
+          setLoading(true);
+          try {
+              const fetchedQuestions = await fetchQuestions(state.settings.category, state.settings.difficulty);
+              if (fetchedQuestions && fetchedQuestions.length > 0) {
+                  const decodedQuestions = fetchedQuestions.map((question: { question: any; correct_answer: any; incorrect_answers: any[]; }) => ({
+                      ...question,
+                      question: decodeHTMLEntities(question.question),
+                      correct_answer: decodeHTMLEntities(question.correct_answer),
+                      incorrect_answers: question.incorrect_answers.map(decodeHTMLEntities),
+                  }));
+                  setQuestions(decodedQuestions);
+              } else {
+                  console.log("Questions have reached rate limit. Have no idea why is this happening, if you know let me know please. ");
+              }
+          } catch (error) {
+              console.error("Error fetching questions:", error);
+          }
+          setLoading(false);
+      };
+      loadQuestions();
+  }, [state.settings]);
+  
 
     useEffect(() => {
         if (showAnswer) {
@@ -62,12 +62,20 @@ const QuizScreen: React.FC<Props> = ({ navigation }) => {
                     setShowAnswer(false);
                     setSelectedAnswer(null);
                 } else {
+                    dispatch({
+                        type: "ADD_COMPLETED_QUIZ",
+                        payload: {
+                            category: state.settings.category,
+                            difficulty: state.settings.difficulty,
+                            score: state.score,
+                        },
+                    });
                     navigation.navigate("Result");
                 }
             }, 2000);
             return () => clearTimeout(timer);
         }
-    }, [showAnswer, currentQuestionIndex, questions.length, navigation]);
+    }, [showAnswer, currentQuestionIndex, questions.length, navigation, dispatch, state.score, state.settings.category, state.settings.difficulty]);
 
     if (loading) {
         return (
@@ -83,16 +91,16 @@ const QuizScreen: React.FC<Props> = ({ navigation }) => {
                 {questions.length > 0 && (
                     <>
                         <View style={styles.questionHeader}>
-    <Text style={styles.questionCount}>
-        Question {currentQuestionIndex + 1}/{questions.length}
-    </Text>
-    <Text style={styles.question}>
-        {questions[currentQuestionIndex].question}
-    </Text>
-</View>
+                            <Text style={styles.questionCount}>
+                                Question {currentQuestionIndex + 1}/{questions.length}
+                            </Text>
+                            <Text style={styles.question}>
+                                {questions[currentQuestionIndex].question}
+                            </Text>
+                        </View>
                         {questions[currentQuestionIndex].incorrect_answers.concat(questions[currentQuestionIndex].correct_answer)
                             .sort(() => Math.random() - 0.5)
-                            .map((answer, index) => (
+                            .map((answer: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal, index: React.Key) => (
                                 <TouchableOpacity
                                     key={index}
                                     style={[
@@ -102,8 +110,10 @@ const QuizScreen: React.FC<Props> = ({ navigation }) => {
                                     onPress={() => {
                                         setSelectedAnswer(answer);
                                         setShowAnswer(true);
+                                        if (answer === questions[currentQuestionIndex].correct_answer) {
+                                            dispatch({ type: 'INCREMENT_SCORE' });
+                                        }
                                     }}
-                                    disabled={showAnswer}
                                 >
                                     <Text style={styles.answerText}>{answer}</Text>
                                 </TouchableOpacity>
@@ -125,9 +135,16 @@ const styles = StyleSheet.create({
     scrollView: {
         width: "100%",
     },
+    questionHeader: {
+        marginBottom: 20,
+    },
+    questionCount: {
+        fontSize: 18,
+        marginBottom: 10,
+        textAlign: "center",
+    },
     question: {
         fontSize: 22,
-        marginBottom: 20,
         textAlign: "center",
     },
     answerButton: {
@@ -140,14 +157,6 @@ const styles = StyleSheet.create({
         textAlign: "center",
         fontSize: 16,
     },
-    questionHeader: {
-      marginBottom: 20,
-  },
-  questionCount: {
-      fontSize: 18,
-      marginBottom: 10, 
-      textAlign: "center",
-  },
 });
 
 export default QuizScreen;
