@@ -28,8 +28,6 @@ const ScoreHistoryScreen = () => {
                     <View key={index} style={styles.quizRecord}>
                         <View style={styles.quizInfo}>
                             <Text style={styles.text}>User: {quiz.userName}</Text>
-                            <Text style={styles.text}>Category: {quiz.category}</Text>
-                            <Text style={styles.text}>Difficulty: {quiz.difficulty}</Text>
                             <Text style={styles.text}>Score: {quiz.score}</Text>
                         </View>
                         <Button title="Delete" onPress={() => handleDelete(index)} />
