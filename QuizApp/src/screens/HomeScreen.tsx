@@ -1,20 +1,30 @@
 import React, { useEffect, useState } from "react";
-import { Text, StyleSheet, Button } from "react-native";
+import { View, Text, StyleSheet, Button } from "react-native";
 import { Picker } from "@react-native-picker/picker";
-
+import { StackNavigationProp } from '@react-navigation/stack';
 import { useQuiz } from "../context/QuizContext";
 import { fetchCategories } from "../utils/api";
 
-import { View } from "react-native";
+type HomeNavigatorParamList = {
+  Home: undefined;
+  Quiz: undefined;
+  Result: undefined;
+};
 
-const HomeScreen: React.FC = ({ navigation }) => {
+type HomeScreenNavigationProp = StackNavigationProp<HomeNavigatorParamList, 'Home'>;
+
+type Props = {
+  navigation: HomeScreenNavigationProp;
+};
+
+const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const [categories, setCategories] = useState([]);
   const { state, dispatch } = useQuiz();
 
   useEffect(() => {
     const loadCategories = async () => {
-      const fetchCatefories = await fetchCategories();
-      setCategories(fetchCatefories);
+      const fetchedCategories = await fetchCategories();
+      setCategories(fetchedCategories);
     };
     loadCategories();
   }, []);
@@ -22,32 +32,26 @@ const HomeScreen: React.FC = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Select Category:</Text>
-
       <Picker
         selectedValue={state.settings.category}
         onValueChange={(itemValue, itemIndex) =>
           dispatch({
             type: "SET_SETTINGS",
-            payload: { ...state.settings, category: itemValue },
+            payload: { ...state.settings, category: itemValue }
           })
         }
       >
         {categories.map((category) => (
-          <Picker.Item
-            key={category.id}
-            label={category.name}
-            value={category.id.toString()}
-          />
+          <Picker.Item key={category.id} label={category.name} value={category.id.toString()} />
         ))}
       </Picker>
-
-      <Text style={styles.title}>Select Dificulty: </Text>
+      <Text style={styles.title}>Select Difficulty:</Text>
       <Picker
         selectedValue={state.settings.difficulty}
         onValueChange={(itemValue, itemIndex) =>
           dispatch({
             type: "SET_SETTINGS",
-            payload: { ...state.settings, difficulty: itemValue },
+            payload: { ...state.settings, difficulty: itemValue }
           })
         }
       >
@@ -56,12 +60,7 @@ const HomeScreen: React.FC = ({ navigation }) => {
         <Picker.Item label="Medium" value="medium" />
         <Picker.Item label="Hard" value="hard" />
       </Picker>
-
-      <Button
-        title="Start Quiz"
-        onPress={() => navigation.navigate("Quiz")}
-        disabled={!state.settings.category}
-      />
+      <Button title="Start Quiz" onPress={() => navigation.navigate("Quiz")} disabled={!state.settings.category} />
     </View>
   );
 };
