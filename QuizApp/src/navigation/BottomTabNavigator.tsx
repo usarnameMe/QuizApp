@@ -23,8 +23,8 @@ const BottomTabNavigator = () => {
         tabBarInactiveTintColor: 'gray',
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="ScoreHistory" component={ScoreHistoryScreen} />
+      <Tab.Screen name="Home" component={HomeScreen} options={{ headerShown: false }}  />
+      <Tab.Screen name="ScoreHistory" component={ScoreHistoryScreen} options={{ headerShown: false }}  />
     </Tab.Navigator>
   );
 };

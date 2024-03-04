@@ -19,7 +19,7 @@ const App = () => {
             options={{ headerShown: false }} 
           />
           <Stack.Screen name="Quiz" component={QuizScreen} />
-          <Stack.Screen name="Result" component={ResultScreen} />
+          <Stack.Screen name="Result" component={ResultScreen} options={{ headerShown: false }}  />
         </Stack.Navigator>
       </NavigationContainer>
     </QuizProvider>
