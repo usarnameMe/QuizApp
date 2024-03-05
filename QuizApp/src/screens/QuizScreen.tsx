@@ -11,7 +11,7 @@ import { fetchQuestions } from "../utils/api";
 import { StackNavigationProp } from "@react-navigation/stack";
 import Screen from "./Screen";
 
-function decodeHTMLEntities(text: string) {
+function decodeHTMLEntities(text) {
   return text
     .replace(/&amp;/g, "&")
     .replace(/&lt;/g, "<")
@@ -26,15 +26,11 @@ type QuizNavigatorParamList = {
   Quiz: undefined;
   Result: undefined;
 };
-
 type QuizScreenNavigationProp = StackNavigationProp<
   QuizNavigatorParamList,
   "Quiz"
 >;
-
-type Props = {
-  navigation: QuizScreenNavigationProp;
-};
+type Props = { navigation: QuizScreenNavigationProp };
 
 const QuizScreen: React.FC<Props> = ({ navigation }) => {
   const { state, dispatch } = useQuiz();
@@ -103,20 +99,6 @@ const QuizScreen: React.FC<Props> = ({ navigation }) => {
     state.settings.difficulty,
   ]);
 
-  const handleNextQuestion = () => {
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-    } else {
-      navigation.navigate("Result");
-    }
-  };
-
-  const handlePreviousQuestion = () => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(currentQuestionIndex - 1);
-    }
-  };
-
   if (loading) {
     return (
       <View style={styles.container}>
@@ -146,7 +128,10 @@ const QuizScreen: React.FC<Props> = ({ navigation }) => {
                   key={index}
                   style={[
                     styles.answerButton,
-                    selectedAnswer === answer && styles.selectedAnswerButton,
+                    selectedAnswer === answer &&
+                      (answer === questions[currentQuestionIndex].correct_answer
+                        ? styles.correctAnswerButton
+                        : styles.wrongAnswerButton),
                   ]}
                   onPress={() => {
                     setSelectedAnswer(answer);
@@ -163,7 +148,9 @@ const QuizScreen: React.FC<Props> = ({ navigation }) => {
               ))}
             <View style={styles.navigationButtons}>
               <TouchableOpacity
-                onPress={handlePreviousQuestion}
+                onPress={() =>
+                  setCurrentQuestionIndex(Math.max(currentQuestionIndex - 1, 0))
+                }
                 style={[
                   styles.navButton,
                   currentQuestionIndex === 0 && styles.disabledButton,
@@ -173,13 +160,12 @@ const QuizScreen: React.FC<Props> = ({ navigation }) => {
                 <Text style={styles.navButtonText}>Previous</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={handleNextQuestion}
-                style={[
-                  styles.navButton,
-                  currentQuestionIndex === questions.length - 1 &&
-                    styles.disabledButton,
-                ]}
-                disabled={currentQuestionIndex === questions.length - 1}
+                onPress={() =>
+                  setCurrentQuestionIndex(
+                    Math.min(currentQuestionIndex + 1, questions.length - 1)
+                  )
+                }
+                style={styles.navButton}
               >
                 <Text style={styles.navButtonText}>
                   {currentQuestionIndex === questions.length - 1
@@ -202,21 +188,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  scrollView: {
-    width: "100%",
-    paddingHorizontal: 10,
-    marginTop: 20,
-  },
+  scrollView: { width: "100%", paddingHorizontal: 10, marginTop: 20 },
   questionHeader: {
     marginBottom: 20,
     padding: 10,
     backgroundColor: "#ffffff",
     borderRadius: 10,
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
@@ -227,11 +206,7 @@ const styles = StyleSheet.create({
     color: "#354f52",
     fontWeight: "bold",
   },
-  question: {
-    fontSize: 22,
-    color: "#2F5233",
-    fontWeight: "600",
-  },
+  question: { fontSize: 22, color: "#2F5233", fontWeight: "600" },
   answerButton: {
     backgroundColor: "#f8f8f8",
     padding: 15,
@@ -240,23 +215,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ddd",
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 2,
   },
-  selectedAnswerButton: {
-    borderColor: "#354f52",
-    backgroundColor: "#dedede",
-  },
-  answerText: {
-    textAlign: "center",
-    fontSize: 16,
-    color: "#354f52",
-  },
+  correctAnswerButton: { borderColor: "green", backgroundColor: "lightgreen" },
+  wrongAnswerButton: { borderColor: "red", backgroundColor: "pink" },
+  answerText: { textAlign: "center", fontSize: 16, color: "#354f52" },
   navigationButtons: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -269,13 +235,8 @@ const styles = StyleSheet.create({
     minWidth: 100,
     alignItems: "center",
   },
-  navButtonText: {
-    color: "white",
-    fontSize: 16,
-  },
-  disabledButton: {
-    backgroundColor: "#cccccc",
-  },
+  navButtonText: { color: "white", fontSize: 16 },
+  disabledButton: { backgroundColor: "#cccccc" },
 });
 
 export default QuizScreen;

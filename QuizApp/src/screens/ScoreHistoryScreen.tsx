@@ -62,17 +62,22 @@ const ScoreHistoryScreen = () => {
 const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
-    marginTop: 10,
+    marginTop: 20,
   },
   quizRecord: {
+    flex:1,
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "flex-start", 
     alignItems: "center",
     marginTop: 25,
-    marginHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ccc",
-    paddingBottom: 10,
+    marginHorizontal: 5,
+    padding: 15, 
+    backgroundColor: "#3a506b", 
+    borderRadius: 10, 
+    shadowColor: 'black', 
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
   },
   quizInfo: {
     minWidth: '70%',
