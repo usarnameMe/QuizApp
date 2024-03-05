@@ -38,18 +38,23 @@ const ScoreHistoryScreen = () => {
               <Text style={styles.text}>User: {quiz.userName}</Text>
               <Text style={styles.text}>Score: {quiz.score}</Text>
             </View>
-            <TouchableOpacity 
-              style={styles.delButton} 
+            <TouchableOpacity
+              style={styles.delButton}
               onPress={() => handleDelete(index)}
             >
               <Text style={styles.buttonText}>Delete</Text>
             </TouchableOpacity>
           </View>
         ))}
+        {state.completedQuizzes.length === 0 && (
+          <View style={styles.emptyHistory}>
+            <Text style={styles.emptyHistoryText}>History is empty</Text>
+          </View>
+        )}
       </ScrollView>
       {state.completedQuizzes.length > 0 && (
-        <TouchableOpacity 
-          style={styles.clearAllButton} 
+        <TouchableOpacity
+          style={styles.clearAllButton}
           onPress={handleClearAll}
         >
           <Text style={styles.buttonText}>Clear All</Text>
@@ -65,22 +70,22 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   quizRecord: {
-    flex:1,
+    flex: 1,
     flexDirection: "row",
-    justifyContent: "flex-start", 
+    justifyContent: "flex-start",
     alignItems: "center",
     marginTop: 25,
     marginHorizontal: 5,
-    padding: 15, 
-    backgroundColor: "#3a506b", 
-    borderRadius: 10, 
-    shadowColor: 'black', 
+    padding: 15,
+    backgroundColor: "#3a506b",
+    borderRadius: 10,
+    shadowColor: "black",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 3,
   },
   quizInfo: {
-    minWidth: '70%',
+    minWidth: "70%",
   },
   text: {
     fontSize: 18,
@@ -102,6 +107,15 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "white",
     fontSize: 16,
+  },
+  emptyHistory: {
+    alignItems: "center",
+    marginTop: 20,
+  },
+  emptyHistoryText: {
+    fontSize: 22,
+    color: "#fff",
+    marginTop: 20
   },
 });
 
