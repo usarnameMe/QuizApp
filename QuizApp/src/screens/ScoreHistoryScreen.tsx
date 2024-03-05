@@ -30,7 +30,7 @@ const ScoreHistoryScreen = () => {
   };
 
   return (
-    <Screen background="#354f52">
+    <Screen background="#52796f">
       <ScrollView style={styles.scrollView}>
         {state.completedQuizzes.map((quiz, index) => (
           <View key={index} style={styles.quizRecord}>
